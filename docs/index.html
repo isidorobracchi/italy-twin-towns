@@ -1,31 +1,711 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Italy Twin Towns</title>
+<html lang="it">
 
-    <link rel="stylesheet" href="./css/style.css">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Comune Gemello</title>
+
+    <meta
+        name="description"
+        content="Scopri il comune italiano più simile — o più diverso — dal tuo."
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/maplibre-gl@^6.9.0/dist/maplibre-gl.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
 </head>
+
 
 <body>
 
-    <main>
-        <h1>Italy Twin Towns</h1>
-        <p>Find the Italian municipality most similar to yours.</p>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
 
-        <input
-            type="text"
-            id="municipality-search"
-            placeholder="Search a municipality..."
+    <!-- NAVIGATION -->
+
+    <header class="topbar">
+
+        <a
+            class="brand"
+            href="./"
+        >
+            <span class="brand-dot"></span>
+
+            Comune Gemello
+        </a>
+
+
+        <nav class="nav-actions">
+
+            <span class="live-pill">
+                <span></span>
+                7.894 comuni
+            </span>
+
+            <a
+                class="nav-link"
+                href="https://github.com/isidorobracchi/italy-twin-towns#readme"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                README
+            </a>
+
+            <button
+                id="method-button"
+                class="nav-link nav-button"
+                type="button"
+            >
+                Come funziona
+            </button>
+
+        </nav>
+
+    </header>
+
+
+    <main class="page">
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <div class="hero-kicker">
+
+                <span class="hero-kicker-dot"></span>
+
+                Esplora l'Italia attraverso i dati
+
+            </div>
+
+
+            <h1>
+                Qual è il tuo
+                <span>comune gemello?</span>
+            </h1>
+
+
+            <p class="hero-subtitle">
+                7.894 comuni, decine di indicatori e un algoritmo
+                che confronta persone, economia e territorio.
+            </p>
+
+
+            <!-- SEARCH -->
+
+            <div class="search-card">
+
+                <div class="search-top">
+
+                    <label for="town-input">
+                        Cerca il tuo comune
+                    </label>
+
+                    <span>
+                        ↓
+                    </span>
+
+                </div>
+
+
+                <div class="search-row">
+
+                    <div class="search-input-wrapper">
+
+                        <span class="search-icon">
+                            ⌕
+                        </span>
+
+                        <input
+                            id="town-input"
+                            list="town-list"
+                            type="text"
+                            placeholder="Giarre, Roma, Bologna..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <datalist id="town-list"></datalist>
+
+
+                    <button
+                        id="find-button"
+                        class="primary-button"
+                    >
+                        Cerca
+                        <span>→</span>
+                    </button>
+
+                </div>
+
+
+                <!-- ADVANCED -->
+
+                <details class="advanced">
+
+                    <summary>
+                        Personalizza la ricerca
+                    </summary>
+
+
+                    <div class="advanced-grid">
+
+                        <div class="control-group">
+
+                            <label for="mode-select">
+                                Cosa vuoi trovare?
+                            </label>
+
+                            <select id="mode-select">
+
+                                <option value="twin">
+                                    Il più simile
+                                </option>
+
+                                <option value="opposite">
+                                    Il più diverso
+                                </option>
+
+                                <option value="surprise">
+                                    Sorprendimi
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="control-group">
+
+                            <label for="min-distance">
+                                Distanza minima
+                            </label>
+
+                            <div class="input-suffix">
+
+                                <input
+                                    id="min-distance"
+                                    type="number"
+                                    min="0"
+                                    max="1500"
+                                    step="50"
+                                    value="0"
+                                >
+
+                                <span>
+                                    km
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="control-group checkbox-group">
+
+                            <label>
+
+                                <input
+                                    id="exclude-region"
+                                    type="checkbox"
+                                >
+
+                                <span>
+                                    Escludi la stessa regione
+                                </span>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="weights">
+
+                        <div class="weights-header">
+
+                            <div>
+
+                                <strong>
+                                    Personalizza l'algoritmo
+                                </strong>
+
+                                <span>
+                                    Quanto conta ogni dimensione?
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                id="reset-weights"
+                                class="text-button"
+                                type="button"
+                            >
+                                Ripristina
+                            </button>
+
+                        </div>
+
+
+                        <div class="weight-control">
+
+                            <label for="people-weight">
+
+                                <span>
+                                    Persone
+                                </span>
+
+                                <strong id="people-weight-value">
+                                    33%
+                                </strong>
+
+                            </label>
+
+                            <input
+                                id="people-weight"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="33"
+                            >
+
+                        </div>
+
+
+                        <div class="weight-control">
+
+                            <label for="economy-weight">
+
+                                <span>
+                                    Economia
+                                </span>
+
+                                <strong id="economy-weight-value">
+                                    33%
+                                </strong>
+
+                            </label>
+
+                            <input
+                                id="economy-weight"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="33"
+                            >
+
+                        </div>
+
+
+                        <div class="weight-control">
+
+                            <label for="territory-weight">
+
+                                <span>
+                                    Territorio
+                                </span>
+
+                                <strong id="territory-weight-value">
+                                    34%
+                                </strong>
+
+                            </label>
+
+                            <input
+                                id="territory-weight"
+                                type="range"
+                                min="0"
+                                max="100"
+                                value="34"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+
+                <div
+                    id="status"
+                    class="status"
+                >
+                    Caricamento dei comuni...
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESULTS -->
+
+        <section
+            id="results"
+            class="results hidden"
         >
 
-        <button id="search-button">
-            Find my twin
-        </button>
+            <div class="result-heading">
+
+                <div>
+
+                    <div
+                        id="result-eyebrow"
+                        class="eyebrow"
+                    >
+                        IL TUO COMUNE GEMELLO
+                    </div>
+
+
+                    <h2 id="match-title"></h2>
+
+                    <p id="match-location"></p>
+
+                </div>
+
+
+                <div
+                    id="score-circle"
+                    class="score-circle"
+                >
+
+                    <strong id="match-score">
+                        —
+                    </strong>
+
+                    <span id="score-label">
+                        affinità
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- COMPARISON -->
+
+            <div class="comparison-grid">
+
+                <article class="town-card">
+
+                    <div class="card-label">
+                        Partenza
+                    </div>
+
+                    <h3 id="source-name"></h3>
+
+                    <p id="source-location"></p>
+
+                    <div
+                        id="source-stats"
+                        class="stats"
+                    ></div>
+
+                </article>
+
+
+                <div class="versus">
+
+                    <span>
+                        VS
+                    </span>
+
+                </div>
+
+
+                <article
+                    id="result-town-card"
+                    class="town-card highlight"
+                >
+
+                    <div
+                        id="twin-card-label"
+                        class="card-label"
+                    >
+                        Comune gemello
+                    </div>
+
+                    <h3 id="twin-name"></h3>
+
+                    <p id="twin-location"></p>
+
+                    <div
+                        id="twin-stats"
+                        class="stats"
+                    ></div>
+
+                </article>
+
+            </div>
+
+
+            <!-- BREAKDOWN -->
+
+            <section class="breakdown">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <div
+                            id="breakdown-eyebrow"
+                            class="eyebrow"
+                        >
+                            PERCHÉ SI ASSOMIGLIANO
+                        </div>
+
+                        <h2 id="breakdown-title">
+                            Profilo di affinità
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="category-bars"
+                    class="category-bars"
+                ></div>
+
+
+                <p
+                    id="explanation"
+                    class="explanation"
+                ></p>
+
+            </section>
+
+
+            <!-- MAP -->
+
+            <section class="map-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            DISTANZA REALE
+                        </div>
+
+                        <h2>
+                            Due comuni, una mappa
+                        </h2>
+
+                    </div>
+
+                    <span id="geo-distance"></span>
+
+                </div>
+
+
+                <div id="map"></div>
+
+            </section>
+
+
+            <!-- SHARE -->
+
+            <section class="share-panel">
+
+                <div class="share-copy">
+
+                    <div class="eyebrow">
+                        FALLO GIRARE
+                    </div>
+
+                    <h2>
+                        Condividi il risultato
+                    </h2>
+
+                    <p>
+                        Chi sarà il comune gemello dei tuoi amici?
+                    </p>
+
+                </div>
+
+
+                <div class="share-buttons">
+
+                    <button
+                        id="share-result"
+                        class="share-button share-main"
+                    >
+                        ↗ Condividi
+                    </button>
+
+
+                    <button
+                        id="share-whatsapp"
+                        class="share-button"
+                    >
+                        WhatsApp
+                    </button>
+
+
+                    <button
+                        id="download-story"
+                        class="share-button"
+                    >
+                        ↓ Story
+                    </button>
+
+
+                    <button
+                        id="copy-link"
+                        class="share-button"
+                    >
+                        ⧉ Link
+                    </button>
+
+                </div>
+
+            </section>
+
+        </section>
+
     </main>
 
-    <script src="./js/app.js"></script>
+
+    <!-- METHODOLOGY MODAL -->
+
+    <dialog id="method-dialog">
+
+        <div class="dialog-inner">
+
+            <div class="dialog-header">
+
+                <div>
+
+                    <div class="eyebrow">
+                        DIETRO LE QUINTE
+                    </div>
+
+                    <h2>
+                        Come funziona?
+                    </h2>
+
+                </div>
+
+                <button
+                    id="close-method"
+                    class="close-button"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <p>
+                Comune Gemello confronta i 7.894 comuni italiani
+                attraverso tre dimensioni principali.
+            </p>
+
+
+            <div class="method-grid">
+
+                <article>
+
+                    <span>
+                        01
+                    </span>
+
+                    <h3>
+                        Persone
+                    </h3>
+
+                    <p>
+                        Popolazione, densità, struttura per età
+                        ed età media.
+                    </p>
+
+                </article>
+
+
+                <article>
+
+                    <span>
+                        02
+                    </span>
+
+                    <h3>
+                        Economia
+                    </h3>
+
+                    <p>
+                        Reddito dichiarato, contribuenti e quota
+                        di redditi elevati.
+                    </p>
+
+                </article>
+
+
+                <article>
+
+                    <span>
+                        03
+                    </span>
+
+                    <h3>
+                        Territorio
+                    </h3>
+
+                    <p>
+                        Superficie, altitudine, litoraneità
+                        e grado di urbanizzazione.
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <p class="method-note">
+                Le variabili vengono trasformate e normalizzate
+                per renderle confrontabili. Il punteggio mostrato
+                è un indice di similarità, non una probabilità.
+            </p>
+
+
+            <a
+                href="https://github.com/isidorobracchi/italy-twin-towns#readme"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="readme-link"
+            >
+                Apri il README completo →
+            </a>
+
+        </div>
+
+    </dialog>
+
+
+    <script
+        type="module"
+        src="js/app.js"
+    ></script>
 
 </body>
+
 </html>
